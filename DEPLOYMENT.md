@@ -11,4 +11,14 @@ Local static-server verification, headless Chrome, no foreground windows:
 - Generated public files scanned for Anthropic/GitHub credential patterns: 0 matches.
 - Original Unity working files and other developers' changes were left untouched.
 
-These checks establish that the prepared static deployment works locally. Live-domain checks remain required after GitHub authentication and push; a completed upload must not be inferred from this record. Play feel, actual sound listening, and user fun evaluation were not performed.
+## Live deployment
+
+Published commit `e524ee1` to the existing `main` branch. GitHub Pages reported `built` with no build error. The existing domain and Pages source (`main`, `/`) were preserved.
+
+- https://glorious.ai.kr/ — homepage play link and existing content verified; 7/7 headless checks passed, including the Korean toggle and mobile-width layout.
+- https://glorious.ai.kr/games/scrap-workshop/ — HTTP 200; the same 28/28 game checks passed against the public HTTPS URL. Korean startup, all three spaces, Min's portrait/dialogue, a purpose choice and response, and return to the yard were verified.
+- All four Unity files were downloaded from the public domain: byte lengths and SHA-256 hashes match `release.json`.
+- Public game startup took 6.4 seconds in this one automated run; this is not a performance average. No browser errors, exceptions or warnings were reported. The game reported preset/mock dialogue and 0 external AI requests.
+- The public Min dialogue screenshot was visually inspected. Screenshot and raw test reports remain in the local publishing checks folders, outside this public repository.
+
+Play feel, actual sound listening, and user fun evaluation were not performed. No real Claude API was called during this deployment.
