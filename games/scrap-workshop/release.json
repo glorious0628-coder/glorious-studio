@@ -1,0 +1,23 @@
+{
+  "version": "0d485cb91c3cccfa",
+  "preparedUtc": "2026-10-31T01:30:59.275865+00:00",
+  "dialogue": "preset-mock-no-external-api",
+  "files": {
+    "WebGL.loader.js": {
+      "bytes": 41128,
+      "sha256": "10d4a8bbcb22ad8e00da21e398a1ec9fa2d0d69f7a38e4f81e767002c3f9b38e"
+    },
+    "WebGL.framework.js.unityweb": {
+      "bytes": 76318,
+      "sha256": "26effcc34403fdfc9dd535d5c637ff7b78f99ca970dbc6575365e3d72dc7b562"
+    },
+    "WebGL.data.unityweb": {
+      "bytes": 7948525,
+      "sha256": "5c10b85f1cbe5f6248eb6117a0209086d2a67a0df4658ca8eacbbdbafe96463f"
+    },
+    "WebGL.wasm.unityweb": {
+      "bytes": 8543121,
+      "sha256": "11e84459f8b426339853d673542eff55bd0f2a5facfeec4b0b654602e72c9597"
+    }
+  }
+}
