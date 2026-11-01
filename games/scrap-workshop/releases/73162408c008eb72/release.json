@@ -1,0 +1,28 @@
+{
+  "version": "73162408c008eb72",
+  "preparedUtc": "2026-11-01T05:21:32.139269+00:00",
+  "dialogue": "preset-mock-no-external-api",
+  "source": {
+    "commit": "24988f2a0bca231b3ba3acc409cf7a28cf598d52",
+    "uncommittedGameSources": false
+  },
+  "files": {
+    "WebGL.loader.js": {
+      "bytes": 41128,
+      "sha256": "f92a8027c1ecfab0d7f582e8886eae9ca3ff32d10f965775422919956bc7aa20"
+    },
+    "WebGL.framework.js.unityweb": {
+      "bytes": 76318,
+      "sha256": "b07ea9701737f08bb8a7355b08ce8ceb0c8ab249193cf44b6645640a994c4a50"
+    },
+    "WebGL.data.unityweb": {
+      "bytes": 7948831,
+      "sha256": "809b47c7f9d7bbd617bf55fb475241bdc876097cc61d98975333ac9d0076c18f"
+    },
+    "WebGL.wasm.unityweb": {
+      "bytes": 8545878,
+      "sha256": "6d3e05b0812095382e460d1301a85e310cc3d3c4786b40aaee1453a4cb069070"
+    }
+  },
+  "publishedUtc": "2026-11-01T05:21:32.348924+00:00"
+}
