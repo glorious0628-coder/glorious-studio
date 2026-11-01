@@ -26,7 +26,11 @@ The script runs, and stops at the first failure:
 4. Commit and push to `main`.
 5. GitHub Pages: waits for `pages/builds/latest` to report `built` for that commit.
 6. Live check: the live `release.json` shows the new version, the four files match byte for byte, and the same two smoke runs pass on `https://glorious.ai.kr/`.
-7. If step 5 or 6 fails, it rolls the entry back to the previous release and pushes that (checked the same way).
+7. If step 5 or 6 fails - including network errors, timeouts or unreadable answers - it rolls the entry back to the previous release and pushes that (checked the same way). Before anything is pushed, the previous release must be restorable: its files must match its manifest (the copy in its folder, or for releases published before those copies existed, such as `0d485cb91c3cccfa`, the root `release.json` from git history).
+
+Every outcome is appended to `deploy-history.jsonl` with a state: `deployed`, `stopped_before_push` (with the reason), or `failed_after_push` with `rollback_attempted` and `rollback_verified` kept apart; a manual roll back is `manual_rollback`. The lock is taken atomically (only one of two runs started together gets in) and only its owner removes it.
+
+`python scripts/test-rollback.py` checks the roll back paths in a throwaway clone whose origin is a local bare repository, with fake Pages and live answers (a failing download, an unverifiable roll back, two runs at once). It never touches GitHub or the public site; run it after changing these scripts.
 
 `--dry-run` stops after the local check and puts the files back. `--allow-same-build` redeploys page or tool changes with the same build. Results go to `D:/Game/Web/publishing/checks/<time>-<version>/`; every deploy appends a line to `D:/Game/Web/publishing/deploy-history.jsonl`.
 

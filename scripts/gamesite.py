@@ -160,6 +160,40 @@ def deployed_versions():
     return seen
 
 
+def history_manifest(version):
+    """The root release.json as it was while `version` was public, from git history (newest such commit). Releases
+    published before per-release manifests existed (e.g. 0d485cb91c3cccfa) only have this one."""
+    for sha in git('log', '--format=%H', '--', 'games/scrap-workshop/release.json').splitlines():
+        try:
+            m = json.loads(git('show', f'{sha}:games/scrap-workshop/release.json'))
+        except (SystemExit, ValueError):
+            continue
+        if m.get('version') == version:
+            return m
+    return None
+
+
+def release_manifest(version):
+    """The manifest of a release that can be put back in public: the copy in its folder, else the historical root
+    manifest. The folder is restored from history if pruned, and every Unity file must match the manifest's length and
+    SHA-256, with the three dialogue modules present. Raises SystemExit when the release cannot be used. The historical
+    values (preparation time, game commit if recorded) are kept as they were; nothing is filled in from today."""
+    restore_release(version)
+    folder = DEST / 'releases' / version
+    own = folder / 'release.json'
+    manifest = json.loads(own.read_text(encoding='utf-8')) if own.is_file() else history_manifest(version)
+    if not manifest or manifest.get('version') != version or set(manifest.get('files', {})) != set(NAMES):
+        raise SystemExit(f'No usable manifest for release {version}')
+    for name, f in manifest['files'].items():
+        data = (folder / name).read_bytes()
+        if len(data) != f['bytes'] or hashlib.sha256(data).hexdigest() != f['sha256']:
+            raise SystemExit(f'Release {version}: {name} does not match its manifest')
+    for module in ('canon.mjs', 'mock.mjs', 'schema.mjs'):
+        if not (folder / 'npc' / module).is_file():
+            raise SystemExit(f'Release {version}: dialogue module npc/{module} is missing')
+    return manifest
+
+
 def restore_release(version):
     """Brings back a release folder removed from the working tree, from the last commit that still had it."""
     folder = DEST / 'releases' / version
