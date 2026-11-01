@@ -30,3 +30,24 @@ The user requested removal of the former game/studio homepage so this domain ope
 The game page and its generation template no longer link back to the former homepage. The domain configuration, prepared dialogue service worker and published Unity release are unchanged. No new AI images or Claude API calls were made.
 
 Local headless verification: 7/7 root-entry checks (redirect, Korean game load, absence of old content/back link, 390px layout) and 28/28 game-flow checks (roles, Min dialogue and choice, return to yard, attack). `scripts/homepage-smoke.json` now tests direct game entry rather than the removed studio landing page.
+
+## 2026-11-01: checked deploy flow and first deploy with it
+
+The user approved deploying every checked game update to this site without asking each time (not paid API calls,
+not art before its own approval). `scripts/deploy-game.py` now runs preflight, prepare, local check, push, GitHub Pages
+and the live check in one go and rolls back on a failed live check; `scripts/rollback-game.py` points the site at an
+earlier release. See README.
+
+First run, release `2fec2c230a50b027` from game commit `3d1a53b` (silhouette fix, local server Content-Length, Ieum
+craft test A reduced prototype; previous public release `0d485cb91c3cccfa`), site commit `c5681f9`:
+
+- Dry run first (local only): 28/28 game flow, 7/7 root entry; the site files were put back.
+- Local check: 28/28 and 7/7, the page ran the new release.
+- GitHub Pages reported `built` for `c5681f9` about 30 s after the push.
+- Live: `release.json` showed the new version; the four Unity files matched byte length and SHA-256; 28/28 game flow
+  and 7/7 root entry on https://glorious.ai.kr/. The craft-test steps (231, debug stock) also passed on the live game.
+- The game page header shows the public version and the deploy time in Korean. The root still opens the game
+  directly (game-only entry kept).
+
+Automated input only; no player feel, listening or fun evaluation. No Claude API call. Each deploy adds about 16 MB of
+Unity files to the git history (the site keeps the newest three releases; older ones stay in history for roll back).
