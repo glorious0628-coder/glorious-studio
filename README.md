@@ -1,10 +1,12 @@
-# Glorious Studio website
+# ScrapWorkshop web game
 
-Existing website: https://glorious.ai.kr/
+Game entry: https://glorious.ai.kr/
 
 ScrapWorkshop prototype: https://glorious.ai.kr/games/scrap-workshop/
 
-The homepage and Roblox project content remain intact. GitHub Pages publishes the static files on `main` using the repository's existing Pages configuration; `CNAME` retains the custom domain. `.nojekyll` serves the game artifacts as-is.
+On 2026-11-01 the user requested this domain contain only ScrapWorkshop. The root now redirects straight to the game. The old studio/Roblox landing page and its unused image/font assets have been removed from the current site. The separate Roblox game project is unaffected. Do not restore the old landing page or add a back link to it.
+
+GitHub Pages publishes the static files on `main` using the repository's existing Pages configuration; `CNAME` retains the custom domain. `.nojekyll` serves the game artifacts as-is.
 
 ## Updating the game
 
@@ -32,4 +34,4 @@ Local development with the real Claude provider is unaffected. Enabling real AI 
 - Refresh resets progress; no persistent save or offline progression.
 - Temporary world art; this deployment does not establish play feel, sound quality or fun.
 
-The Unity project remains in its original working folder. This repository tracks the public website, prepared game artifacts and repeatable publishing tools.
+The Unity project lives separately at `D:/Game/Web/ScrapWorkshop`. This checkout is at `D:/Game/Web/publishing/glorious-studio` and tracks the game entry, prepared game artifacts and repeatable publishing tools.

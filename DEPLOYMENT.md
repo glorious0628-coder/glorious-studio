@@ -22,3 +22,11 @@ Published commit `e524ee1` to the existing `main` branch. GitHub Pages reported 
 - The public Min dialogue screenshot was visually inspected. Screenshot and raw test reports remain in the local publishing checks folders, outside this public repository.
 
 Play feel, actual sound listening, and user fun evaluation were not performed. No real Claude API was called during this deployment.
+
+## 2026-11-01: game-only entry
+
+The user requested removal of the former game/studio homepage so this domain opens only ScrapWorkshop. The root entry now redirects straight to `/games/scrap-workshop/`. The former landing-page HTML and its 19 dedicated image/font files are removed from the current site. Its Git history remains available; the separate Roblox project is untouched.
+
+The game page and its generation template no longer link back to the former homepage. The domain configuration, prepared dialogue service worker and published Unity release are unchanged. No new AI images or Claude API calls were made.
+
+Local headless verification: 7/7 root-entry checks (redirect, Korean game load, absence of old content/back link, 390px layout) and 28/28 game-flow checks (roles, Min dialogue and choice, return to yard, attack). `scripts/homepage-smoke.json` now tests direct game entry rather than the removed studio landing page.

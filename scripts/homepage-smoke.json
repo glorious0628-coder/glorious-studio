@@ -1,1 +1,9 @@
-[{"sleep": 1200}, {"eval": "(() => {const a=document.querySelector('#scrap-workshop a');if(!a || a.pathname!='/games/scrap-workshop/' || !document.body.textContent.includes('Halo & Horns'))throw Error('Missing game link or original project');document.querySelector('[data-set-lang=ko]').click();return {title:document.title,gameLink:a.href,language:document.documentElement.lang};})()"}, {"shot": "homepage-ko"}, {"viewport": [390, 844]}, {"sleep": 250}, {"eval": "(() => { if(document.documentElement.scrollWidth>innerWidth+1)throw Error('Horizontal overflow');return {width:innerWidth,content:document.documentElement.scrollWidth};})()"}, {"shot": "homepage-mobile"}]
+[
+  {"wait":"PAGE_UNITY_READY","timeout":180,"any":true},
+  {"eval":"(() => {if(location.pathname!='/games/scrap-workshop/')throw Error('Root did not open the game');if(document.documentElement.lang!=='ko'||!document.querySelector('#unity-canvas')||!window.unityInstance)throw Error('Game not ready in Korean');if(/Halo & Horns|Every choice tilts/.test(document.body.textContent)||document.querySelector('header a[href=\"/\"]'))throw Error('Old homepage content or back link remains');return {title:document.title,path:location.pathname,gameLoaded:!!window.unityInstance};})()"},
+  {"shot":"root-game-ko"},
+  {"viewport":[390,844]},
+  {"sleep":250},
+  {"eval":"(() => {if(document.documentElement.scrollWidth>innerWidth+1)throw Error('Horizontal overflow');return {width:innerWidth,content:document.documentElement.scrollWidth};})()"},
+  {"shot":"root-game-mobile"}
+]
