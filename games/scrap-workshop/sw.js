@@ -1,7 +1,7 @@
 // Public prototype: preset dialogue, no external AI requests, no asset caching.
-import { mockTurn } from './releases/73162408c008eb72/npc/mock.mjs';
-import { normalize } from './releases/73162408c008eb72/npc/schema.mjs';
-import { NPCS } from './releases/73162408c008eb72/npc/canon.mjs';
+import { mockTurn } from './releases/3df9d20f94ba608c/npc/mock.mjs';
+import { normalize } from './releases/3df9d20f94ba608c/npc/schema.mjs';
+import { NPCS } from './releases/3df9d20f94ba608c/npc/canon.mjs';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 const endpoint = new URL('api/npc/turn', self.registration.scope).href;
