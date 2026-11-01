@@ -51,3 +51,17 @@ craft test A reduced prototype; previous public release `0d485cb91c3cccfa`), sit
 
 Automated input only; no player feel, listening or fun evaluation. No Claude API call. Each deploy adds about 16 MB of
 Unity files to the git history (the site keeps the newest three releases; older ones stay in history for roll back).
+
+## 2026-11-01: roll back fixes, then release 3161137e
+
+After the Codex audit, the roll back path was fixed and checked in a throwaway clone with fake answers before any
+real deploy (`scripts/test-rollback.py`, 17/17): historical manifests for releases without a per-release copy
+(`0d485cb91c3cccfa`), guarded post-push checks (a download error now leads to the roll back), recorded states
+(`deployed`, `stopped_before_push`, `failed_after_push` with `rollback_attempted` / `rollback_verified`), and an
+atomic lock (of two simultaneous runs exactly one enters). The public site was never broken on purpose; the real
+roll back to the live site has not been exercised.
+
+Release `3161137e548f81d2` from game commit `afb46fc` (craft test A second pass), site commit `867c96e`: local 28/28
+and 7/7, Pages built in about 30 s, live files match, live 28/28 and 7/7, and the craft-test steps 231/231 on the live
+game. The public page's game canvas is smaller than the local test page: a 1280x760 window gives 1076x605, a 960x540
+window 684x385 (header and footer take 155 px of height).
