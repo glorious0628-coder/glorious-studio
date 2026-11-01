@@ -290,16 +290,22 @@ def deploy(a):
     gs.git('fetch', '-q', 'origin')
     ahead = int(gs.git('rev-list', '--count', 'origin/main..HEAD'))
     behind = int(gs.git('rev-list', '--count', 'HEAD..origin/main'))
-    if ahead:
-        # Commits here that GitHub, and so the public site, does not have: most likely a deploy or roll back cut off
-        # between its commit and its push. Their build is not public and is never reported as such; nothing is forced
-        # or thrown away here, the person running this decides.
-        subjects = gs.git('log', '--format=%h %s', 'origin/main..HEAD').splitlines()
+    subjects = gs.git('log', '--format=%h %s', 'origin/main..HEAD').splitlines() if ahead else []
+    entry_unpushed = ahead and gs.git('diff', '--name-only', 'origin/main', 'HEAD', '--', 'games/scrap-workshop/release.json')
+    if entry_unpushed or (ahead and behind):
+        # Commits here that GitHub, and so the public site, does not have, and the release entry among them: a deploy or
+        # roll back cut off between its commit and its push (or a checkout that has also fallen behind). That build is
+        # not public and is never reported as such; nothing is forced or thrown away, the person running this decides.
         stop(f'the publishing checkout has {ahead} commit(s) that origin/main does not have'
              + (f' and is {behind} behind it' if behind else '')
-             + ' (an earlier deploy or roll back stopped between its commit and its push?): ' + '; '.join(subjects[:5])
+             + (' and its release entry (release.json) differs from origin/main: an earlier deploy or roll back stopped'
+                ' between its commit and its push?' if entry_unpushed else '') + ' Commits: ' + '; '.join(subjects[:5])
              + '. The public site does not run them. Check them, then push them (git push origin main) and run this again'
              + ' to verify the site, or undo them by hand; this tool neither forces a push nor discards commits.')
+    if ahead:
+        # Other local commits (the tools, the page around the game) leave the release entry alone: they go out with this
+        # deploy's push, after its local check, as they always have.
+        say(f'  {ahead} local commit(s) not on origin/main yet go out with this deploy: ' + '; '.join(subjects[:5]))
     if behind:
         gs.git('pull', '-q', '--ff-only', 'origin', 'main')
         say(f'  pulled {behind} commit(s) from origin/main')
@@ -328,7 +334,8 @@ def deploy(a):
         # origin/main has this build (the checkout is level with it by now); the public site only if it says so.
         live = live_version()
         if live == version:
-            say(f'nothing to deploy: origin/main and the public site already run this build ({version})')
+            say(f'nothing to deploy: origin/main and the public site already run this build ({version})'
+                + (f'; the {ahead} local commit(s) above are still not pushed' if ahead else ''))
             return None
         stop(f'origin/main already has this build ({version}) but the public site shows {live or "no readable release.json"}:'
              ' GitHub Pages may still be building it or may have failed. Check the Pages run and the site'
