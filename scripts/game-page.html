@@ -10,10 +10,12 @@
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#15161b;color:#e7dfd0;font:14px/1.6 system-ui,sans-serif}
     body{padding:12px 16px}header{max-width:1280px;margin:0 auto 10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}a{color:#edbc78}h1{font-size:17px;margin:0}button{font:inherit;background:#e0a050;color:#15161b;border:0;border-radius:6px;padding:6px 14px;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}
     #game{position:relative;max-width:1280px;width:min(100%,calc((100dvh - 155px)*16/9));min-width:280px;aspect-ratio:16/9;background:#000;margin:auto}canvas{width:100%;height:100%;display:block;outline:none}#loading{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:20px;background:#15161b}progress{width:240px;max-width:100%;margin:12px auto;accent-color:#e0a050}#loading p{max-width:34em}footer{max-width:1280px;margin:10px auto;color:#c5bdb0;font-size:12px}footer p{margin:4px 0}#game:fullscreen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto}#game:fullscreen canvas{object-fit:contain}.error{color:#ffbfad}@media(max-width:700px){#game{width:100%}body{padding:10px}header{gap:10px}}
+    #version{margin:0 0 0 auto;color:#c5bdb0;font-size:12px}#update{max-width:1280px;margin:0 auto 8px;padding:6px 12px;border:1px solid #6b5636;border-radius:6px;background:#2a2318;display:flex;gap:12px;align-items:center;flex-wrap:wrap}#update[hidden]{display:none}
   </style>
 </head>
 <body>
-  <header><h1>고철 공방 <small>개발 체험판</small></h1><button id="fullscreen" type="button">전체 화면</button></header>
+  <header><h1>고철 공방 <small>개발 체험판</small></h1><button id="fullscreen" type="button">전체 화면</button><p id="version">공개 버전 확인 중…</p></header>
+  <div id="update" role="status" hidden><span>새 공개 버전이 있습니다(<span id="update-time"></span> 배포). 저장 기능이 없어 새로고침하면 처음부터 시작합니다. 원할 때 새로고침하세요.</span><button id="reload" type="button">새로고침</button></div>
   <main id="game">
     <canvas id="unity-canvas" tabindex="0" aria-label="고철 공방 게임 화면"></canvas>
     <div id="loading" role="status" aria-live="polite"><strong id="load-text">게임을 불러오는 중…</strong><progress id="progress" max="1" value="0"></progress><p>처음 접속하면 약 17MB를 내려받습니다.<br>키보드가 있는 PC의 Chrome 또는 Edge를 권장합니다.</p></div>
@@ -33,20 +35,45 @@
       catch { document.querySelector('#fullscreen').textContent = '브라우저에서 전체 화면을 지원하지 않습니다'; }
     });
     canvas.addEventListener('pointerdown', () => canvas.focus());
+    // The release in use comes from release.json read past every cache, so a page cached before a deploy still opens the
+    // newest build (each build has its own folder). The version baked in below is only the fallback when that read fails.
+    const baked = {version:'__VERSION__', publishedUtc:'__PUBLISHED__'};
+    const when = iso => { try { return new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul', month:'long', day:'numeric', hour:'numeric', minute:'2-digit'}).format(new Date(iso)); } catch { return iso; } };
+    const latest = async () => { const r = await fetch('release.json?t=' + Date.now(), {cache:'no-store'}); if (!r.ok) throw Error('release ' + r.status); return r.json(); };
+    let release = baked;
+    try { release = await latest(); } catch (error) { console.warn('RELEASE_FALLBACK ' + error.message); }
+    const version = /^[0-9a-f]{16}$/.test(release.version || '') ? release.version : baked.version;
+    const published = release.publishedUtc || release.preparedUtc || baked.publishedUtc;
+    document.querySelector('#version').textContent = `공개 버전 ${version.slice(0, 8)} · ${when(published)} 배포 (한국 시간)`;
+    console.log('PAGE_RELEASE version=' + version + ' published=' + published);
+    // A newer deploy while someone plays: say so and let them choose when to reload (progress is not saved, so never forced).
+    const check = async () => {
+      try {
+        const next = await latest();
+        if (/^[0-9a-f]{16}$/.test(next.version || '') && next.version !== version) {
+          document.querySelector('#update-time').textContent = when(next.publishedUtc || next.preparedUtc);
+          document.querySelector('#update').hidden = false;
+          console.log('PAGE_UPDATE_AVAILABLE version=' + next.version);
+        }
+      } catch {}
+    };
+    setInterval(check, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+    document.querySelector('#reload').addEventListener('click', () => location.reload());
     try {
       if (!('serviceWorker' in navigator)) throw Error('이 브라우저에서는 준비된 대화를 연결할 수 없습니다. Chrome 또는 Edge로 열어 주세요.');
       const control = navigator.serviceWorker.controller ? Promise.resolve() : new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, {once:true}));
-      await navigator.serviceWorker.register('./sw.js?v=__VERSION__', {type:'module', updateViaCache:'none'});
+      await navigator.serviceWorker.register('./sw.js?v=' + version, {type:'module', updateViaCache:'none'});
       await navigator.serviceWorker.ready;
       await Promise.race([control, new Promise((_,reject) => setTimeout(() => reject(Error('게임 준비 시간이 초과됐습니다. 새로고침해 주세요.')),15000))]);
-      const base = 'releases/__VERSION__';
+      const base = 'releases/' + version;
       window.protoLoadStart = performance.now();
       const script = document.createElement('script');
       script.src = `${base}/WebGL.loader.js`;
       script.onerror = () => fail('게임 파일을 받지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요.');
       script.onload = async () => {
         try {
-          const instance = await createUnityInstance(canvas, {arguments:[],dataUrl:`${base}/WebGL.data.unityweb`,frameworkUrl:`${base}/WebGL.framework.js.unityweb`,codeUrl:`${base}/WebGL.wasm.unityweb`,streamingAssetsUrl:'StreamingAssets',companyName:'Glorious Studio',productName:'ScrapWorkshop Prototype',productVersion:'__VERSION__',showBanner:(message,type)=>console.log('BANNER '+type+': '+message)}, progress => document.querySelector('#progress').value = progress);
+          const instance = await createUnityInstance(canvas, {arguments:[],dataUrl:`${base}/WebGL.data.unityweb`,frameworkUrl:`${base}/WebGL.framework.js.unityweb`,codeUrl:`${base}/WebGL.wasm.unityweb`,streamingAssetsUrl:'StreamingAssets',companyName:'Glorious Studio',productName:'ScrapWorkshop Prototype',productVersion:version,showBanner:(message,type)=>console.log('BANNER '+type+': '+message)}, progress => document.querySelector('#progress').value = progress);
           window.unityInstance = instance;
           loading.style.display = 'none'; canvas.focus();
           console.log('PAGE_UNITY_READY ms='+Math.round(performance.now()-window.protoLoadStart));

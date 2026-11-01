@@ -8,18 +8,41 @@ On 2026-11-01 the user requested this domain contain only ScrapWorkshop. The roo
 
 GitHub Pages publishes the static files on `main` using the repository's existing Pages configuration; `CNAME` retains the custom domain. `.nojekyll` serves the game artifacts as-is.
 
-## Updating the game
+## Updating the game (checked deploy)
 
-Finish and verify the Unity WebGL build in the separate ScrapWorkshop working folder first. Do not run a second Unity build during another developer's build.
+The user approved (2026-11-01) deploying every checked game update to this site without asking again. That approval does not cover paid API calls, or generating or applying art before its own approval.
+
+When a finished change unit to game code or approved art is committed in the game repo, its checks pass and a Unity WebGL build has succeeded (not after every edit; no Unity build for documentation-only changes):
 
 ```powershell
-python scripts/prepare-game.py C:/path/to/ScrapWorkshop
-python -m http.server 8177 --bind 127.0.0.1
+python D:/Game/Web/publishing/glorious-studio/scripts/deploy-game.py
 ```
 
-Open `http://127.0.0.1:8177/games/scrap-workshop/` or use the project's headless CDP driver and `scripts/deploy-smoke.json`. Check the prepared game, the homepage link, and `git diff` before committing and pushing to `main`. Publishing is an explicit operation; the preparation script never pushes.
+The script runs, and stops at the first failure:
 
-`prepare-game.py` copies only the completed WebGL loader, framework, data and WASM, plus the existing preset NPC dialogue and its normalization rules. Artifacts live under a content-derived release path; `release.json` records SHA-256 checksums. Keep older release folders while open tabs may still use them. No Unity project, personal planning documents, logs, credentials, environment files, server configuration or API keys are published.
+1. Preflight: one deploy at a time (`.deploy.lock`), `gh` logged in, this checkout clean on `main` and up to date, no Unity process with the game project open, no uncommitted game sources (`Assets`, `Packages`, `ProjectSettings`, `Tools/npc-server`), and no game source newer than the build.
+2. Prepare (`gamesite.prepare`, also `prepare-game.py`): the four Unity files and the preset dialogue go to `games/scrap-workshop/releases/<version>/` (version = content hash). `release.json` records the files' SHA-256, the game commit and the publish time. The newest three releases stay in the site; older ones remain in git history.
+3. Local check: a local server, then headless Chrome with `deploy-smoke.json` (game flow) and `homepage-smoke.json` (root entry), using `Tools/cdp/drive.mjs` from the game. The page must run the new release. On failure the site files are put back and nothing is pushed.
+4. Commit and push to `main`.
+5. GitHub Pages: waits for `pages/builds/latest` to report `built` for that commit.
+6. Live check: the live `release.json` shows the new version, the four files match byte for byte, and the same two smoke runs pass on `https://glorious.ai.kr/`.
+7. If step 5 or 6 fails, it rolls the entry back to the previous release and pushes that (checked the same way).
+
+`--dry-run` stops after the local check and puts the files back. `--allow-same-build` redeploys page or tool changes with the same build. Results go to `D:/Game/Web/publishing/checks/<time>-<version>/`; every deploy appends a line to `D:/Game/Web/publishing/deploy-history.jsonl`.
+
+**Roll back** (no Unity build needed):
+
+```powershell
+python D:/Game/Web/publishing/glorious-studio/scripts/rollback-game.py --list
+python D:/Game/Web/publishing/glorious-studio/scripts/rollback-game.py               # the release before the current one
+python D:/Game/Web/publishing/glorious-studio/scripts/rollback-game.py --to <version>
+```
+
+A pruned release is restored from git history. `git revert <deploy commit>` and a push also works.
+
+**Stale files:** Unity files never change in place (new folder per build). The game page reads `release.json` past every cache, so a page cached before a deploy still opens the newest build; the version baked into `index.html` is only a fallback. The dialogue service worker is registered as `sw.js?v=<version>` with `updateViaCache: 'none'`, installs at once and takes over. Nobody has to clear browser data. A tab left open during a deploy shows a notice with the new deploy time and a reload button; it is never reloaded by force (progress is not saved). The page header shows the public version and the deploy time in Korean.
+
+No Unity project, personal planning documents, logs, credentials, environment files, server configuration or API keys are published. `git` and `gh` use the login already on this PC; never put a token in a file.
 
 ## Public dialogue mode
 
