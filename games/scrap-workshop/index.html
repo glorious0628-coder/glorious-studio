@@ -37,7 +37,7 @@
     canvas.addEventListener('pointerdown', () => canvas.focus());
     // The release in use comes from release.json read past every cache, so a page cached before a deploy still opens the
     // newest build (each build has its own folder). The version baked in below is only the fallback when that read fails.
-    const baked = {version:'2fec2c230a50b027', publishedUtc:'2026-11-01T03:58:17.212884+00:00'};
+    const baked = {version:'3161137e548f81d2', publishedUtc:'2026-11-01T04:40:40.475626+00:00'};
     const when = iso => { try { return new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul', month:'long', day:'numeric', hour:'numeric', minute:'2-digit'}).format(new Date(iso)); } catch { return iso; } };
     const latest = async () => { const r = await fetch('release.json?t=' + Date.now(), {cache:'no-store'}); if (!r.ok) throw Error('release ' + r.status); return r.json(); };
     let release = baked;
