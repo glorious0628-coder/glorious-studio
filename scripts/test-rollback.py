@@ -40,7 +40,7 @@ sh('git', 'clone', '-q', str(TMP / 'origin.git'), str(TMP / 'site'))
 site = TMP / 'site'
 for f in (REAL / 'scripts').glob('*.py'):
     shutil.copyfile(f, site / 'scripts' / f.name)
-sh('git', '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qam', 'test: working-tree scripts', cwd=site)
+sh('git', '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qa', '--allow-empty', '-m', 'test: working-tree scripts', cwd=site)
 sh('git', 'push', '-q', 'origin', 'main', cwd=site)
 check('glorious0628-coder' not in sh('git', 'remote', 'get-url', 'origin', cwd=site), 'the throwaway clone pushes to a local bare repo, not GitHub')
 
@@ -60,13 +60,19 @@ check(hm and hm['version'] == OLD and 'source' not in hm, 'its historical root m
 m = gs.release_manifest(OLD)
 check(m['files'] == hm['files'], 'release_manifest accepts it after checking lengths, SHA-256 and the dialogue modules')
 # ... also when the folder has been pruned (deleted in a later commit): restored from history, then checked.
-shutil.rmtree(gs.DEST / 'releases' / OLD)
-sh('git', 'commit', '-qam', 'test: prune the old release', cwd=site)
+if sh('git', 'ls-tree', '-r', '--name-only', 'HEAD', '--', f'games/scrap-workshop/releases/{OLD}', cwd=site):
+    shutil.rmtree(gs.DEST / 'releases' / OLD)
+    sh('git', 'commit', '-qam', 'test: prune the old release', cwd=site)
+else:
+    deploy.put_back()  # already pruned in the site (a later deploy removed it); start again from HEAD
+check(not (gs.DEST / 'releases' / OLD).exists(), 'the old release folder is not in the working tree before the restore')
 m2 = gs.release_manifest(OLD)
 check(m2['version'] == OLD and (gs.DEST / 'releases' / OLD / 'WebGL.wasm.unityweb').is_file(), 'a pruned old release is restored from history and verified')
 deploy.put_back()
+check(sh('git', 'status', '--porcelain', cwd=site) == '', 'after restoring a pruned release for a check, put_back leaves nothing staged or changed')
 sh('git', 'reset', '-q', '--hard', 'origin/main', cwd=site)
 # ... and a damaged file is refused.
+gs.restore_release(OLD)
 p = gs.DEST / 'releases' / OLD / 'WebGL.loader.js'
 p.write_bytes(p.read_bytes() + b'x')
 try:

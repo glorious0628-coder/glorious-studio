@@ -208,6 +208,9 @@ def prune(keep_versions):
 
 
 def put_back():
+    """The site files as in HEAD again: unstaged first (restoring a pruned release from history stages it), then the
+    working tree, then untracked files."""
+    gs.git('reset', '-q', 'HEAD', '--', 'games/scrap-workshop')
     gs.git('checkout', '--', 'games/scrap-workshop')
     gs.git('clean', '-fdq', '--', 'games/scrap-workshop')
 
