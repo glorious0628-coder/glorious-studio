@@ -105,15 +105,27 @@ def free_port():
 
 
 def drive(game, url, steps, out, port):
-    """Headless Chrome steps (Tools/cdp/drive.mjs in the game). True when every step passed."""
+    """Headless Chrome steps (Tools/cdp/drive.mjs in the game). True only when every step passed and the page had no
+    unexpected problem (an uncaught exception, an error log, a ledger mismatch) and no expected one went missing: the
+    driver's PROBLEMS verdict line must be there and clean, so an older driver without it does not pass either."""
+    return drive_verdict(*run_drive(game, url, steps, out, port), url)
+
+
+def run_drive(game, url, steps, out, port):
     r = subprocess.run(['node', str(game / 'Tools/cdp/drive.mjs'), url, str(out), str(steps), str(port)],
                        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=600)
     pathlib.Path(out).mkdir(parents=True, exist_ok=True)
     (pathlib.Path(out) / 'drive.txt').write_text(r.stdout + r.stderr, encoding='utf-8')
-    m = re.search(r'STEPS (\d+) FAILED (\d+)', r.stdout)
-    problems = len(re.findall(r'^PROBLEM ', r.stdout, re.M))
-    say(f'  {url} -> {m.group(0) if m else "no result"}, browser problems {problems}')
-    return bool(m) and m.group(2) == '0' and r.returncode == 0
+    return r.stdout, r.returncode
+
+
+def drive_verdict(stdout, returncode, url=''):
+    m = re.search(r'STEPS (\d+) FAILED (\d+)', stdout)
+    p = re.search(r'PROBLEMS unexpected=(\d+) expected=(\d+) missing=(\d+)', stdout)
+    listed = len(re.findall(r'^PROBLEM ', stdout, re.M))
+    say(f'  {url} -> {m.group(0) if m else "no result"}, '
+        + (f'browser problems {p.group(1)} (expected {p.group(2)}, missing {p.group(3)})' if p else 'no problem verdict'))
+    return bool(m and p) and m.group(2) == '0' and p.group(1) == '0' and p.group(3) == '0' and listed == 0 and returncode == 0
 
 
 def page_release(out):
@@ -174,6 +186,14 @@ def wait_pages(sha, timeout=900):
         time.sleep(15)
     say('  GitHub Pages did not report the build in time')
     return False
+
+
+def live_version():
+    """The release the public entry points at now (its release.json), or None when it cannot be read."""
+    try:
+        return json.loads(gs.fetch(gs.LIVE_GAME + f'release.json?t={int(time.time())}'))['version']
+    except Exception:  # noqa: BLE001 - unreadable for any reason means "not known to be live"
+        return None
 
 
 def live_check(game, manifest, out, wait=420):
@@ -262,8 +282,19 @@ def deploy(a):
     if gs.git('status', '--porcelain'):
         stop('the publishing checkout has uncommitted changes; commit or remove them first')
     gs.git('fetch', '-q', 'origin')
-    behind = gs.git('rev-list', '--count', 'HEAD..origin/main')
-    if behind != '0':
+    ahead = int(gs.git('rev-list', '--count', 'origin/main..HEAD'))
+    behind = int(gs.git('rev-list', '--count', 'HEAD..origin/main'))
+    if ahead:
+        # Commits here that GitHub, and so the public site, does not have: most likely a deploy or roll back cut off
+        # between its commit and its push. Their build is not public and is never reported as such; nothing is forced
+        # or thrown away here, the person running this decides.
+        subjects = gs.git('log', '--format=%h %s', 'origin/main..HEAD').splitlines()
+        stop(f'the publishing checkout has {ahead} commit(s) that origin/main does not have'
+             + (f' and is {behind} behind it' if behind else '')
+             + ' (an earlier deploy or roll back stopped between its commit and its push?): ' + '; '.join(subjects[:5])
+             + '. The public site does not run them. Check them, then push them (git push origin main) and run this again'
+             + ' to verify the site, or undo them by hand; this tool neither forces a push nor discards commits.')
+    if behind:
         gs.git('pull', '-q', '--ff-only', 'origin', 'main')
         say(f'  pulled {behind} commit(s) from origin/main')
     if unity_building(game):
@@ -288,8 +319,14 @@ def deploy(a):
     version = manifest['version']
     if previous and previous['version'] == version and not a.allow_same_build:
         put_back()
-        say(f'nothing to deploy: the public site already runs this build ({version})')
-        return None
+        # origin/main has this build (the checkout is level with it by now); the public site only if it says so.
+        live = live_version()
+        if live == version:
+            say(f'nothing to deploy: origin/main and the public site already run this build ({version})')
+            return None
+        stop(f'origin/main already has this build ({version}) but the public site shows {live or "no readable release.json"}:'
+             ' GitHub Pages may still be building it or may have failed. Check the Pages run and the site'
+             ' (scripts/rollback-game.py --list); --allow-same-build deploys the entry again.')
     manifest['publishedUtc'] = gs.now_utc()
     gs.write_entry(manifest)
     keep = [version] + [v for v in gs.deployed_versions() if v != version][:KEEP - 1]
