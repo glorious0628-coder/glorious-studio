@@ -171,7 +171,10 @@ def guarded(name, fn, *args):
         return False
 
 
-def wait_pages(sha, timeout=900):
+def wait_pages(sha, timeout=900, version=None):
+    """Waits for GitHub Pages to publish the pushed commit. Its builds API has been seen to stay "building" after the site
+    was already up (2026-11-01); then the live release.json showing `version` counts as published too, and the live
+    check that follows still verifies every file and the page."""
     end = time.time() + timeout
     while time.time() < end:
         r = subprocess.run(['gh', 'api', f'repos/{gs.REPO}/pages/builds/latest'], capture_output=True, text=True)
@@ -183,6 +186,9 @@ def wait_pages(sha, timeout=900):
             if b.get('commit') == sha and b.get('status') == 'errored':
                 say(f'  GitHub Pages build failed: {b.get("error")}')
                 return False
+        if version and live_version() == version:
+            say(f'  GitHub Pages: the builds API has not said "built" for {sha[:7]}, but the live release.json shows {version}')
+            return True
         time.sleep(15)
     say('  GitHub Pages did not report the build in time')
     return False
@@ -266,7 +272,7 @@ def roll_back_to(version, game, out, co_author, current=None):
     except Exception as error:  # noqa: BLE001
         say(f'  roll back push failed: {error}')
         return True, False
-    verified = guarded('GitHub Pages (roll back)', wait_pages, sha) and guarded('live check (roll back)', live_check, game, manifest, out / 'rollback')
+    verified = guarded('GitHub Pages (roll back)', wait_pages, sha, 900, manifest['version']) and guarded('live check (roll back)', live_check, game, manifest, out / 'rollback')
     say('roll back ' + ('verified' if verified else 'NOT verified - check the site by hand (scripts/rollback-game.py --list)'))
     return True, verified
 
@@ -359,7 +365,7 @@ def deploy(a):
             'previous': previous and previous['version'], 'checks': str(out)}
 
     say('5/7 GitHub Pages')
-    ok = guarded('GitHub Pages', wait_pages, sha)
+    ok = guarded('GitHub Pages', wait_pages, sha, 900, version)
     say('6/7 live check')
     ok = ok and guarded('live check', live_check, game, manifest, out)
     if not ok:
