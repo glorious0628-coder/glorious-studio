@@ -93,7 +93,9 @@ def unity_building(game):
 
 
 def sources_newer_than_build(game):
-    built = (game / 'Build/WebGL/Build/WebGL.wasm.unityweb').stat().st_mtime
+    # The last build is its newest output: a build that changes only scenes or art rewrites the data file but can keep
+    # the code (wasm) of the build before it, so the wasm alone would date the build too early.
+    built = max(p.stat().st_mtime for p in (game / 'Build/WebGL/Build').glob('WebGL.*'))
     names = gs.git('ls-files', '--cached', '--others', '--exclude-standard', '--', *gs.GAME_SOURCES, cwd=game).splitlines()
     return [n for n in names if (game / n).is_file() and (game / n).stat().st_mtime > built + 1]
 
