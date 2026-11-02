@@ -51,7 +51,7 @@
     canvas.addEventListener('keydown', event => { if ([' ', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) event.preventDefault(); });
     // The release in use comes from release.json read past every cache, so a page cached before a deploy still opens the
     // newest build (each build has its own folder). The version baked in below is only the fallback when that read fails.
-    const baked = {version:'035b85c829b7c742', publishedUtc:'2026-11-02T02:42:25.517104+00:00'};
+    const baked = {version:'ec2bec52fb940900', publishedUtc:'2026-11-02T03:00:27.103657+00:00'};
     const when = iso => { try { return new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul', month:'long', day:'numeric', hour:'numeric', minute:'2-digit'}).format(new Date(iso)); } catch { return iso; } };
     const latest = async () => { const r = await fetch('release.json?t=' + Date.now(), {cache:'no-store'}); if (!r.ok) throw Error('release ' + r.status); return r.json(); };
     let release = baked;
