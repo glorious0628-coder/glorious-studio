@@ -1,28 +1,28 @@
 {
-  "version": "765b2e6859d9c392",
-  "preparedUtc": "2026-11-02T01:36:00.653156+00:00",
+  "version": "fdc5b08eb8ad365f",
+  "preparedUtc": "2026-11-02T02:25:42.662915+00:00",
   "dialogue": "preset-mock-no-external-api",
   "source": {
-    "commit": "def9174964238c4b481c87b74534a9580e2e79b7",
+    "commit": "37117a1402ce329794aef28253783e9cf1f06a00",
     "uncommittedGameSources": false
   },
   "files": {
     "WebGL.loader.js": {
       "bytes": 41128,
-      "sha256": "8d79ba6fa271c4460945126e9b33cdedc3e57ecc9a617e9923803c3d584bdae8"
+      "sha256": "6716bdf79f1bde39dd8037ac16e4aafa6b8af0e0f9ab05f1fbe25ad3c531f22c"
     },
     "WebGL.framework.js.unityweb": {
       "bytes": 76318,
-      "sha256": "66f2f6bd0258ce4fca803a89d8275f836cb86713a235c0ce02fe78badd64c29e"
+      "sha256": "77a7e2d19500f319baedbf7a784b31493ebcf871bf07167322f1f2a609001b77"
     },
     "WebGL.data.unityweb": {
-      "bytes": 7958656,
-      "sha256": "4f2327ef39239feefe1e70a2bc71627c19d98784690ed1eab2dd36705d182a0d"
+      "bytes": 8465574,
+      "sha256": "45315029112af3c55eaa7ef467ccd7910c2c2d4b0276fa86d3a16396e1ba9dae"
     },
     "WebGL.wasm.unityweb": {
-      "bytes": 8567442,
-      "sha256": "cfe92a423ce277b13583c30c5d50c4f32212f27e51de44bfbc42c9ca0fb0cb5f"
+      "bytes": 8570394,
+      "sha256": "4e571ea474be0a3721b70e3683b27f5f25a806c1725094c2c16405e22cc54bf5"
     }
   },
-  "publishedUtc": "2026-11-02T01:36:00.857413+00:00"
+  "publishedUtc": "2026-11-02T02:25:42.884767+00:00"
 }

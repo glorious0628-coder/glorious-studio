@@ -84,6 +84,11 @@ const REACT = {
   sold: [L('Thank you.', '고맙습니다.'), L("Thanks, Bora. I'll take good care of it.", '고마워요, 보라 씨. 잘 쓸게요.'), L('...Thanks.', '...고마워요.')],
   not_fit: [L("That won't do for what I need.", '그건 제가 쓸 데엔 안 맞아요.'), L("Sorry, that one won't do.", '미안해요, 그건 안 되겠어요.'), L('No.', '아니요.')],
   bench_making: [L("Yes, I'll wait.", '네, 기다릴게요.'), L("Then I'll wait a little.", '그럼 좀 기다리죠.'), L('...Just a bit, then.', '...그럼 잠깐만요.')],
+  // Made already, at the workshop or on its way over (not "being made").
+  bench_ready: [L("Already made? Then I'll wait.", '벌써 다 됐어요? 그럼 기다릴게요.'), L("Oh, it's done already? I'll wait for it.", '어, 벌써 다 됐어요? 그럼 기다릴게요.'), L('...Then I will wait.', '...그럼 기다릴게요.')],
+  // On the bench but stopped for its part: no time was promised.
+  bench_waiting: [L("I see. I'll wait a little and see.", '그렇군요. 조금 기다려 볼게요.'), L("Ah, it's stuck? Then I'll wait a bit and see.", '아, 멈춰 있구나. 그럼 좀 기다려 볼게요.'), L('...A little, then.', '...조금만요.')],
+  bench_in_shop: [L('Oh, then may I see it?', '어, 그럼 보여 주실래요?'), L("Oh, it's here? Let me see it.", '어, 들어왔어요? 보여 주세요.'), L('...Let me see.', '...보여 주세요.')],
   bench_none: [L('Ah, I see.', '아, 네.'), L("Ah, nothing on the bench. That's all right.", '아, 작업대엔 없군요. 괜찮아요.'), L('...I see.', '...그렇군요.')],
   next_visit: [L('Yes, I will.', '네, 그럴게요.'), L("Then I'll come by again.", '그럼 또 들를게요.'), L('...Fine.', '...네.')],
   goodbye: [L('Goodbye.', '네, 안녕히 계세요.'), L('Bye for now.', '그럼 이만 갈게요.'), L("...I'll go.", '...가 볼게요.')],
@@ -175,6 +180,9 @@ export async function mockTurn(req) {
       case 'sold': line = r('sold'); emotion = tone === 1 ? 'happy' : 'neutral'; intent = 'wants_to_go'; break;
       case 'not_fit': line = r('not_fit'); emotion = 'worried'; break;
       case 'bench_making': line = r('bench_making'); emotion = 'thinking'; intent = 'will_wait'; break;
+      case 'bench_ready': line = r('bench_ready'); emotion = tone === 1 ? 'happy' : 'neutral'; intent = 'will_wait'; break;
+      case 'bench_waiting': line = r('bench_waiting'); emotion = 'thinking'; intent = 'will_wait'; break;
+      case 'bench_in_shop': line = r('bench_in_shop'); emotion = 'neutral'; break;
       case 'bench_none': line = r('bench_none'); emotion = 'neutral'; break;
       case 'chat': {
         if (little) {
