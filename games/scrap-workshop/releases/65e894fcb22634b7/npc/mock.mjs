@@ -161,7 +161,10 @@ export async function mockTurn(req) {
     }
     // The reason the game keeps is only what this line actually said (nothing is recorded that was not told).
     purpose = { need: p, reason: toldWhy ? line : '' };
-    emotion = little || rel === 'stranger' ? 'neutral' : req.cameBackOnPromise ? 'thinking' : 'happy';
+    // An everyday hello is not a big joy (docs/expression-observation-2026-11-02.md): the plain face, which already
+    // smiles a little; the wide smile only when a trusted regular brings news of their own; back on Bora's word, they
+    // wonder whether it is in.
+    emotion = req.cameBackOnPromise ? 'thinking' : rel === 'trusted' && topic && !little ? 'happy' : 'neutral';
   } else {
     const code = req.resultCode || '';
     const spec = req.shop?.shown === 'scrap' ? 1 : 0;
