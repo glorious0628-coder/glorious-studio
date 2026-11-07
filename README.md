@@ -1,4 +1,4 @@
-# Glorious Horizon 사이트
+# glorious.ai.kr 사이트
 
 https://glorious.ai.kr/ 는 얼쑤!(`/games/eolssu/`)로 바로 이동한다.
 
