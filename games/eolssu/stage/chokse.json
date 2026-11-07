@@ -1,0 +1,45 @@
+{
+  "cell": 383,
+  "columns": 5,
+  "pages": [
+    "chokse.webp",
+    "chokse_1.webp",
+    "chokse_2.webp",
+    "chokse_3.webp"
+  ],
+  "feetY": 378,
+  "centerX": 191,
+  "figureHeight": 360,
+  "start": {
+    "idle": 0,
+    "ready": 8,
+    "release": 14,
+    "kung": 22,
+    "deok": 28,
+    "threat_l": 34,
+    "threat_r": 40,
+    "charge": 46,
+    "stamp_high": 52,
+    "stamp_mid": 58,
+    "deong": 64,
+    "hop": 70,
+    "roll": 76,
+    "wind": 82
+  },
+  "frames": {
+    "idle": 8,
+    "ready": 6,
+    "release": 8,
+    "kung": 6,
+    "deok": 6,
+    "threat_l": 6,
+    "threat_r": 6,
+    "charge": 6,
+    "stamp_high": 6,
+    "stamp_mid": 6,
+    "deong": 6,
+    "hop": 6,
+    "roll": 6,
+    "wind": 8
+  }
+}
