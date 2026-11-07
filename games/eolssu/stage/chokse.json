@@ -1,14 +1,16 @@
 {
-  "cell": 383,
-  "columns": 5,
+  "cell": 431,
+  "columns": 4,
   "pages": [
     "chokse.webp",
     "chokse_1.webp",
     "chokse_2.webp",
-    "chokse_3.webp"
+    "chokse_3.webp",
+    "chokse_4.webp",
+    "chokse_5.webp"
   ],
-  "feetY": 378,
-  "centerX": 191,
+  "feetY": 426,
+  "centerX": 215,
   "figureHeight": 360,
   "start": {
     "idle": 0,
